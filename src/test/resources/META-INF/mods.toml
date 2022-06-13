@@ -1,0 +1,6 @@
+modLoader="javafml"
+loaderVersion="[28,)"
+license="MIT"
+
+[[mods]]
+modId="betterhudlibtest"
