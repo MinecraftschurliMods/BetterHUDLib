@@ -2,10 +2,10 @@ package com.github.minecraftschurlimods.betterhudlib;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.GuiComponent;
-import net.minecraftforge.client.gui.ForgeIngameGui;
-import net.minecraftforge.client.gui.IIngameOverlay;
+import net.minecraftforge.client.gui.overlay.ForgeGui;
+import net.minecraftforge.client.gui.overlay.IGuiOverlay;
 
-public abstract class HUDElement extends GuiComponent implements IIngameOverlay {
+public abstract class HUDElement extends GuiComponent implements IGuiOverlay {
     private int x;
     private int y;
     private int width;
@@ -19,7 +19,7 @@ public abstract class HUDElement extends GuiComponent implements IIngameOverlay 
     }
 
     @Override
-    public void render(ForgeIngameGui gui, PoseStack poseStack, float partialTick, int screenWidth, int screenHeight) {
+    public void render(ForgeGui gui, PoseStack poseStack, float partialTick, int screenWidth, int screenHeight) {
         poseStack.pushPose();
         int x = this.x;
         int y = this.y;
@@ -42,7 +42,7 @@ public abstract class HUDElement extends GuiComponent implements IIngameOverlay 
         poseStack.popPose();
     }
 
-    public abstract void draw(ForgeIngameGui gui, PoseStack poseStack, float partialTick);
+    public abstract void draw(ForgeGui gui, PoseStack poseStack, float partialTick);
 
     int getX() {
         return x;

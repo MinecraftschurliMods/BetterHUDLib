@@ -4,7 +4,8 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.client.event.RenderGuiEvent;
+import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.client.settings.KeyModifier;
 import net.minecraftforge.common.MinecraftForge;
@@ -23,10 +24,13 @@ public final class HUDManager {
     private static KeyMapping KEY;
 
     public static void initialize() {
-        INIT_LOCK.lock();
-        if (INITIALIZED) return;
-        INITIALIZED = true;
-        INIT_LOCK.unlock();
+        try {
+            INIT_LOCK.lock();
+            if (INITIALIZED) return;
+            INITIALIZED = true;
+        } finally {
+            INIT_LOCK.unlock();
+        }
 
         MinecraftForge.EVENT_BUS.addListener(HUDManager::onBeforeHUD);
     }
@@ -35,10 +39,13 @@ public final class HUDManager {
         if (!INITIALIZED) {
             initialize();
         }
-        KEYBIND_LOCK.lock();
-        if (KEYBIND_ENABLED) return;
-        KEYBIND_ENABLED = true;
-        KEYBIND_LOCK.unlock();
+        try {
+            KEYBIND_LOCK.lock();
+            if (KEYBIND_ENABLED) return;
+            KEYBIND_ENABLED = true;
+        } finally {
+            KEYBIND_LOCK.unlock();
+        }
 
         FMLJavaModLoadingContext.get().getModEventBus().addListener(HUDManager::onClientInit);
         MinecraftForge.EVENT_BUS.addListener(HUDManager::onInput);
@@ -48,15 +55,14 @@ public final class HUDManager {
         Minecraft.getInstance().setScreen(new HUDManagerScreen());
     }
 
-    private static void onInput(InputEvent.KeyInputEvent evt) {
+    private static void onInput(InputEvent.Key evt) {
         if (evt.getAction() != InputConstants.PRESS) return;
         if (!KEY.isActiveAndMatches(InputConstants.getKey(evt.getKey(), evt.getScanCode()))) return;
 
         open();
     }
 
-    private static void onBeforeHUD(RenderGameOverlayEvent.Pre evt) {
-        if (evt.getType() != RenderGameOverlayEvent.ElementType.ALL) return;
+    private static void onBeforeHUD(RenderGuiEvent.Pre evt) {
         if (!(Minecraft.getInstance().screen instanceof HUDManagerScreen)) return;
 
         evt.setCanceled(true);

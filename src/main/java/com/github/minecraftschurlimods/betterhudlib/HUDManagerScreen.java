@@ -1,6 +1,7 @@
 package com.github.minecraftschurlimods.betterhudlib;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Widget;
@@ -10,11 +11,10 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
-import net.minecraftforge.client.gui.ForgeIngameGui;
-import net.minecraftforge.client.gui.IIngameOverlay;
-import net.minecraftforge.client.gui.OverlayRegistry;
-
-import java.util.function.BooleanSupplier;
+import net.minecraftforge.client.gui.overlay.ForgeGui;
+import net.minecraftforge.client.gui.overlay.IGuiOverlay;
+import net.minecraftforge.client.gui.overlay.GuiOverlayManager;
+import net.minecraftforge.client.gui.overlay.NamedGuiOverlay;
 
 public final class HUDManagerScreen extends Screen {
 
@@ -25,9 +25,9 @@ public final class HUDManagerScreen extends Screen {
     @Override
     protected void init() {
         super.init();
-        for (OverlayRegistry.OverlayEntry entry : OverlayRegistry.orderedEntries()) {
-            if (entry.getOverlay() instanceof HUDElement element) {
-                addRenderableWidget(new HUDElementWrapper(Component.literal(entry.getDisplayName()), element, entry::isEnabled));
+        for (NamedGuiOverlay entry : GuiOverlayManager.getOverlays()) {
+            if (entry.overlay() instanceof HUDElement element) {
+                addRenderableWidget(new HUDElementWrapper(Component.translatable(Util.makeDescriptionId("hud_element", entry.id())), element));
             } else {
                 addRenderableOnly(new StandardHUDElement(entry));
             }
@@ -37,44 +37,33 @@ public final class HUDManagerScreen extends Screen {
     private interface HUDWidget extends Widget {
         @Override
         default void render(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
-            if (isEnabled()) {
-                Minecraft minecraft = Minecraft.getInstance();
-                getHUDElement().render(
-                        ((ForgeIngameGui) minecraft.gui),
-                        pPoseStack,
-                        pPartialTick,
-                        minecraft.getWindow().getGuiScaledWidth(),
-                        minecraft.getWindow().getGuiScaledHeight()
-                );
-            }
+            Minecraft minecraft = Minecraft.getInstance();
+            getHUDElement().render(
+                    ((ForgeGui) minecraft.gui),
+                    pPoseStack,
+                    pPartialTick,
+                    minecraft.getWindow().getGuiScaledWidth(),
+                    minecraft.getWindow().getGuiScaledHeight()
+            );
         }
 
-        IIngameOverlay getHUDElement();
-
-        boolean isEnabled();
+        IGuiOverlay getHUDElement();
     }
 
-    private record StandardHUDElement(OverlayRegistry.OverlayEntry entry) implements HUDWidget {
+    private record StandardHUDElement(NamedGuiOverlay entry) implements HUDWidget {
         @Override
-        public IIngameOverlay getHUDElement() {
-            return entry.getOverlay();
-        }
-
-        @Override
-        public boolean isEnabled() {
-            return entry.isEnabled();
+        public IGuiOverlay getHUDElement() {
+            return entry.overlay();
         }
     }
 
     private static class HUDElementWrapper extends AbstractWidget implements HUDWidget {
 
         private final HUDElement element;
-        private final BooleanSupplier enabled;
 
-        public HUDElementWrapper(Component name, HUDElement element, BooleanSupplier enabled) {
+        public HUDElementWrapper(Component name, HUDElement element) {
             super(element.getX(), element.getY(), element.getWidth(), element.getHeight(), name);
             this.element = element;
-            this.enabled = enabled;
         }
 
         @Override
@@ -101,13 +90,8 @@ public final class HUDManagerScreen extends Screen {
         public void playDownSound(SoundManager pHandler) {}
 
         @Override
-        public IIngameOverlay getHUDElement() {
+        public IGuiOverlay getHUDElement() {
             return element;
-        }
-
-        @Override
-        public boolean isEnabled() {
-            return enabled.getAsBoolean();
         }
     }
 }
