@@ -6,16 +6,18 @@ plugins {
     id 'org.parchmentmc.librarian.forgegradle'
 }
 
-group = "${lib_group}"
-version = "${lib_version}+${mc_version}"
+group = "${project.lib_group}"
+version = "${project.mc_version}-${project.lib_version}"
+archivesBaseName = "${project.lib_id}"
 
 if (System.getenv('RELEASE_TYPE') != null) {
     status = System.getenv('RELEASE_TYPE').toLowerCase()
     if (status == 'snapshot') status = status.toUpperCase()
-    version = "${version}-${status}"
 } else {
-    version = "${version}-SNAPSHOT"
     status = 'SNAPSHOT'
+}
+if (status != 'release') {
+    version = "${version}-${status}"
 }
 
 archivesBaseName = lib_id
