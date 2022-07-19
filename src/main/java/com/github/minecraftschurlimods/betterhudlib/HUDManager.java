@@ -4,12 +4,11 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.event.InputEvent;
+import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.RenderGuiEvent;
-import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.client.settings.KeyModifier;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.lwjgl.glfw.GLFW;
 
@@ -68,7 +67,7 @@ public final class HUDManager {
         evt.setCanceled(true);
     }
 
-    private static void onClientInit(FMLClientSetupEvent evt) {
+    private static void onClientInit(RegisterKeyMappingsEvent evt) {
         if (KEY != null) return;
 
         //noinspection NoTranslation
@@ -79,5 +78,6 @@ public final class HUDManager {
                 InputConstants.Type.KEYSYM.getOrCreate(GLFW.GLFW_KEY_M),
                 "hud_manager"
         );
+        evt.register(KEY);
     }
 }
