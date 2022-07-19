@@ -21,6 +21,7 @@ public abstract class HUDElement extends GuiComponent implements IGuiOverlay {
     @Override
     public void render(ForgeGui gui, PoseStack poseStack, float partialTick, int screenWidth, int screenHeight) {
         poseStack.pushPose();
+        poseStack.translate(screenWidth / 2., screenHeight / 2., 0);
         int x = this.x;
         int y = this.y;
         int elementWidth = this.getWidth();
