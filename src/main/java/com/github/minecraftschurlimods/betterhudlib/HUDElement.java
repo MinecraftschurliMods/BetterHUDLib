@@ -44,29 +44,37 @@ public abstract class HUDElement extends GuiComponent implements IGuiOverlay {
 
     public abstract void draw(ForgeGui gui, PoseStack poseStack, float partialTick);
 
-    int getX() {
+    protected final int getX() {
         return x;
     }
 
-    int getY() {
+    protected final int getY() {
         return y;
     }
 
     void setPosition(int x, int y) {
         this.x = x;
         this.y = y;
+        onPositionUpdate(x, y);
+    }
+
+    protected void onPositionUpdate(int x, int y) {
     }
 
     void setSize(int width, int height) {
         this.width = width;
         this.height = height;
+        onSizeUpdate(width, height);
     }
 
-    public int getWidth() {
+    protected void onSizeUpdate(int width, int height) {
+    }
+
+    protected final int getWidth() {
         return this.width;
     }
 
-    public int getHeight() {
+    protected final int getHeight() {
         return this.height;
     }
 }
