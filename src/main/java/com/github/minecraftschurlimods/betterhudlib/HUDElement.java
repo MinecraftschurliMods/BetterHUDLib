@@ -5,19 +5,32 @@ import net.minecraft.client.gui.GuiComponent;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.client.gui.overlay.IGuiOverlay;
 
+import java.util.function.IntSupplier;
+import java.util.function.Supplier;
+
 public abstract class HUDElement extends GuiComponent implements IGuiOverlay {
+    private final Supplier<Position> defaultPosition;
+    private final Supplier<Size> defaultSize;
     private Position position;
-    private int width;
-    private int height;
+    private Size size;
 
     protected HUDElement(AnchorX anchorX, AnchorY anchorY, int x, int y, int width, int height) {
-        this.position = new Position(anchorX, anchorY, x, y);
-        this.width = width;
-        this.height = height;
+        this(() -> anchorX, () -> anchorY, () -> x, () -> y, () -> width, () -> height);
+    }
+
+    protected HUDElement(Supplier<AnchorX> anchorX, Supplier<AnchorY> anchorY, IntSupplier x, IntSupplier y, IntSupplier width, IntSupplier height) {
+        this.defaultPosition = () -> new Position(anchorX.get(), anchorY.get(), x.getAsInt(), y.getAsInt());
+        this.defaultSize = () -> new Size(width.getAsInt(), height.getAsInt());
     }
 
     @Override
     public void render(ForgeGui gui, PoseStack poseStack, float partialTick, int screenWidth, int screenHeight) {
+        if (position == null) {
+            position = defaultPosition.get();
+        }
+        if (size == null) {
+            size = defaultSize.get();
+        }
         poseStack.pushPose();
         int x = this.position.getX(screenWidth);
         int y = this.position.getY(screenHeight);
@@ -73,23 +86,23 @@ public abstract class HUDElement extends GuiComponent implements IGuiOverlay {
         onPositionUpdate(this.position.anchorX(), anchorY, this.position.x(), this.position.y());
     }
 
-    protected void onPositionUpdate(AnchorX anchorX, AnchorY anchorY, int x, int y) {}
-
     void setSize(int width, int height) {
-        this.width = width;
-        this.height = height;
+        this.size = new Size(width, height);
         onSizeUpdate(width, height);
     }
 
-    protected void onSizeUpdate(int width, int height) {
-    }
+    protected void onPositionUpdate(AnchorX anchorX, AnchorY anchorY, int x, int y) {}
+
+    protected void onSizeUpdate(int width, int height) {}
+
+    protected void save() {}
 
     protected final int getWidth() {
-        return this.width;
+        return this.size.width();
     }
 
     protected final int getHeight() {
-        return this.height;
+        return this.size.height();
     }
 
     public enum AnchorX {
@@ -129,4 +142,6 @@ public abstract class HUDElement extends GuiComponent implements IGuiOverlay {
             return new Position(anchorX, anchorY, x, y);
         }
     }
+
+    record Size(int width, int height) {}
 }

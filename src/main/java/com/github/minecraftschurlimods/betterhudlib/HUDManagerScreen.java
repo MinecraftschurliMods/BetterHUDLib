@@ -5,6 +5,7 @@ import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Widget;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
@@ -33,6 +34,16 @@ public final class HUDManagerScreen extends Screen {
                 addRenderableOnly(new StandardHUDElement(entry));
             }
         }
+    }
+
+    @Override
+    public void onClose() {
+        for (GuiEventListener child : children()) {
+            if (child instanceof HUDElementWrapper wrapper) {
+                wrapper.element.save();
+            }
+        }
+        super.onClose();
     }
 
     private interface HUDWidget extends Widget {
