@@ -20,8 +20,9 @@ public class TestMod {
         @Override
         public void run() {
             HUDManager.initialize();
+            HUDManager.enableKeybind();
             FMLJavaModLoadingContext.get().getModEventBus().addListener((RegisterGuiOverlaysEvent evt) -> {
-                evt.registerAboveAll("TestHUD", new HUDElement(0, 0, 100, 100) {
+                evt.registerAboveAll("test_hud", new HUDElement(HUDElement.AnchorX.CENTER, HUDElement.AnchorY.CENTER, 0, 0, 100, 100) {
                     @Override
                     public void draw(ForgeGui gui, PoseStack poseStack, float partialTick) {
                         fill(poseStack, 0, 0, getHeight(), getWidth(), 0xFF00FF00);
