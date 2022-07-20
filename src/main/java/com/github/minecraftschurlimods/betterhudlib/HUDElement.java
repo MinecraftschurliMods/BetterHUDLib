@@ -9,31 +9,45 @@ import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
 public abstract class HUDElement extends GuiComponent implements IGuiOverlay {
-    private final Supplier<Position> defaultPosition;
-    private final Supplier<Size> defaultSize;
-    private Position position;
-    private Size size;
+    private Supplier<AnchorX> defaultAnchorX;
+    private Supplier<AnchorY> defaultAnchorY;
+    private IntSupplier defaultX;
+    private IntSupplier defaultY;
+    private IntSupplier defaultWidth;
+    private IntSupplier defaultHeight;
+    private AnchorX anchorX;
+    private AnchorY anchorY;
+    private int x;
+    private int y;
+    private int width;
+    private int height;
 
     protected HUDElement(AnchorX anchorX, AnchorY anchorY, int x, int y, int width, int height) {
         this(() -> anchorX, () -> anchorY, () -> x, () -> y, () -> width, () -> height);
     }
 
     protected HUDElement(Supplier<AnchorX> anchorX, Supplier<AnchorY> anchorY, IntSupplier x, IntSupplier y, IntSupplier width, IntSupplier height) {
-        this.defaultPosition = () -> new Position(anchorX.get(), anchorY.get(), x.getAsInt(), y.getAsInt());
-        this.defaultSize = () -> new Size(width.getAsInt(), height.getAsInt());
+        this.defaultAnchorX = anchorX;
+        this.defaultAnchorY = anchorY;
+        this.defaultX = x;
+        this.defaultY = y;
+        this.defaultWidth = width;
+        this.defaultHeight = height;
     }
 
     @Override
     public void render(ForgeGui gui, PoseStack poseStack, float partialTick, int screenWidth, int screenHeight) {
-        if (position == null) {
-            position = defaultPosition.get();
-        }
-        if (size == null) {
-            size = defaultSize.get();
+        if (anchorX == null) {
+            anchorX = defaultAnchorX.get();
+            anchorY = defaultAnchorY.get();
+            x = defaultX.getAsInt();
+            y = defaultY.getAsInt();
+            width = defaultWidth.getAsInt();
+            height = defaultHeight.getAsInt();
         }
         poseStack.pushPose();
-        int x = this.position.getX(screenWidth);
-        int y = this.position.getY(screenHeight);
+        int x = this.getX(screenWidth);
+        int y = this.getY(screenHeight);
         int elementWidth = this.getWidth();
         int elementHeight = this.getHeight();
         if (x < 0) {
@@ -55,40 +69,58 @@ public abstract class HUDElement extends GuiComponent implements IGuiOverlay {
 
     public abstract void draw(ForgeGui gui, PoseStack poseStack, float partialTick);
 
-    public int getRawX() {
-        return this.position.x();
-    }
-
-    public int getRawY() {
-        return this.position.y();
-    }
-
     protected final int getX(int screenWidth) {
-        return this.position.getX(screenWidth);
+        return switch (anchorX) {
+            case LEFT -> x;
+            case CENTER -> x + screenWidth / 2 - width / 2;
+            case RIGHT -> screenWidth - x - width;
+        };
     }
 
     protected final int getY(int screenHeight) {
-        return this.position.getY(screenHeight);
+        return switch (anchorY) {
+            case TOP -> y;
+            case CENTER -> y + screenHeight / 2 - height / 2;
+            case BOTTOM -> screenHeight - y - height;
+        };
     }
 
-    void setPosition(int x, int y) {
-        this.position = this.position.with(x, y);
-        onPositionUpdate(this.position.anchorX(), this.position.anchorY(), x, y);
+    void setPosition(int x, int y, int screenWidth, int screenHeight) {
+        this.x = switch (anchorX) {
+            case LEFT -> x;
+            case CENTER -> x - screenWidth / 2 + width / 2;
+            case RIGHT -> screenWidth - x - width;
+        };
+        this.y = switch (anchorY) {
+            case TOP -> y;
+            case CENTER -> y - screenHeight / 2 + height / 2;
+            case BOTTOM -> screenHeight - y - height;
+        };
+        onPositionUpdate(this.anchorX, this.anchorY, this.x, this.y);
     }
 
     void setAnchorX(AnchorX anchorX) {
-        this.position = this.position.with(anchorX);
-        onPositionUpdate(anchorX, this.position.anchorY(), this.position.x(), this.position.y());
+        this.anchorX = anchorX;
+        onPositionUpdate(anchorX, this.anchorY, this.x, this.y);
     }
 
     void setAnchorY(AnchorY anchorY) {
-        this.position = this.position.with(anchorY);
-        onPositionUpdate(this.position.anchorX(), anchorY, this.position.x(), this.position.y());
+        this.anchorY = anchorY;
+        onPositionUpdate(this.anchorX, anchorY, this.x, this.y);
     }
 
     void setSize(int width, int height) {
-        this.size = new Size(width, height);
+        this.width = width;
+        this.height = height;
         onSizeUpdate(width, height);
+    }
+
+    protected final int getWidth() {
+        return this.width;
+    }
+
+    protected final int getHeight() {
+        return this.height;
     }
 
     protected void onPositionUpdate(AnchorX anchorX, AnchorY anchorY, int x, int y) {}
@@ -96,14 +128,6 @@ public abstract class HUDElement extends GuiComponent implements IGuiOverlay {
     protected void onSizeUpdate(int width, int height) {}
 
     protected void save() {}
-
-    protected final int getWidth() {
-        return this.size.width();
-    }
-
-    protected final int getHeight() {
-        return this.size.height();
-    }
 
     public enum AnchorX {
         LEFT,
@@ -116,32 +140,4 @@ public abstract class HUDElement extends GuiComponent implements IGuiOverlay {
         CENTER,
         BOTTOM
     }
-
-    record Position(AnchorX anchorX, AnchorY anchorY, int x, int y) {
-        public int getX(int screenWidth) {
-            return switch (anchorX) {
-                case LEFT -> x;
-                case CENTER -> screenWidth / 2 + x;
-                case RIGHT -> screenWidth - x;
-            };
-        }
-        public int getY(int screenHeight) {
-            return switch (anchorY) {
-                case TOP -> y;
-                case CENTER -> screenHeight / 2 + y;
-                case BOTTOM -> screenHeight - y;
-            };
-        }
-        public Position with(int x, int y) {
-            return new Position(anchorX, anchorY, x, y);
-        }
-        public Position with(AnchorX anchorX) {
-            return new Position(anchorX, anchorY, x, y);
-        }
-        public Position with(AnchorY anchorY) {
-            return new Position(anchorX, anchorY, x, y);
-        }
-    }
-
-    record Size(int width, int height) {}
 }

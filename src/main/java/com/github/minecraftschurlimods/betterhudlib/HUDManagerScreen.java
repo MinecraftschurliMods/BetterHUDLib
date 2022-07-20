@@ -11,7 +11,6 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Mth;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.client.gui.overlay.GuiOverlayManager;
 import net.minecraftforge.client.gui.overlay.IGuiOverlay;
@@ -46,6 +45,13 @@ public final class HUDManagerScreen extends Screen {
         super.onClose();
     }
 
+    @Override
+    public void mouseMoved(double pMouseX, double pMouseY) {
+        if (getFocused() != null) {
+            getFocused().mouseMoved(pMouseX, pMouseY);
+        }
+    }
+
     private interface HUDWidget extends Widget {
         @Override
         default void render(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
@@ -72,6 +78,8 @@ public final class HUDManagerScreen extends Screen {
     private static class HUDElementWrapper extends AbstractWidget implements HUDWidget {
 
         private final HUDElement element;
+        private Double holdX;
+        private Double holdY;
 
         public HUDElementWrapper(Component name, HUDElement element) {
             super(element.getX(Minecraft.getInstance().getWindow().getGuiScaledWidth()), element.getY(Minecraft.getInstance().getWindow().getGuiScaledHeight()), element.getWidth(), element.getHeight(), name);
@@ -89,10 +97,24 @@ public final class HUDManagerScreen extends Screen {
         }
 
         @Override
-        protected void onDrag(double pMouseX, double pMouseY, double pDragX, double pDragY) {
-            int newX = this.element.getRawX() + Mth.ceil(pDragX);
-            int newY = this.element.getRawY() + Mth.ceil(pDragY);
-            setPosition(newX, newY);
+        public void onClick(double pMouseX, double pMouseY) {
+            this.holdX = pMouseX - this.x;
+            this.holdY = pMouseY - this.y;
+        }
+
+        @Override
+        public void onRelease(double pMouseX, double pMouseY) {
+            this.holdX = null;
+            this.holdY = null;
+        }
+
+        @Override
+        public void mouseMoved(double pMouseX, double pMouseY) {
+            if (this.holdX != null && this.holdY != null) {
+                int newX = (int) (pMouseX - this.holdX);
+                int newY = (int) (pMouseY - this.holdY);
+                setPosition(newX, newY);
+            }
         }
 
         @Override
@@ -106,14 +128,14 @@ public final class HUDManagerScreen extends Screen {
                     case GLFW.GLFW_KEY_HOME -> this.element.setAnchorX(HUDElement.AnchorX.CENTER);
                     case GLFW.GLFW_KEY_END -> this.element.setAnchorY(HUDElement.AnchorY.CENTER);
                 }
+                this.x = this.element.getX(Minecraft.getInstance().getWindow().getGuiScaledWidth());
+                this.y = this.element.getY(Minecraft.getInstance().getWindow().getGuiScaledHeight());
             } else {
                 switch (pKeyCode) {
-                    case GLFW.GLFW_KEY_RIGHT -> this.setPosition(this.element.getRawX() + 1, this.element.getRawY());
-                    case GLFW.GLFW_KEY_LEFT -> this.setPosition(this.element.getRawX() - 1, this.element.getRawY());
-                    case GLFW.GLFW_KEY_DOWN -> this.setPosition(this.element.getRawX(), this.element.getRawY() + 1);
-                    case GLFW.GLFW_KEY_UP -> this.setPosition(this.element.getRawX(), this.element.getRawY() - 1);
-                    case GLFW.GLFW_KEY_HOME -> this.setPosition(0, this.element.getRawY());
-                    case GLFW.GLFW_KEY_END -> this.setPosition(this.element.getRawX(), 0);
+                    case GLFW.GLFW_KEY_RIGHT -> this.setPosition(this.x + 1, this.y);
+                    case GLFW.GLFW_KEY_LEFT -> this.setPosition(this.x - 1, this.y);
+                    case GLFW.GLFW_KEY_DOWN -> this.setPosition(this.x, this.y + 1);
+                    case GLFW.GLFW_KEY_UP -> this.setPosition(this.x, this.y - 1);
                 }
             }
             return true;
@@ -123,9 +145,9 @@ public final class HUDManagerScreen extends Screen {
             Minecraft minecraft = Minecraft.getInstance();
             int scaledWidth = minecraft.getWindow().getGuiScaledWidth();
             int scaledHeight = minecraft.getWindow().getGuiScaledHeight();
-            this.element.setPosition(newX, newY);
-            this.x = this.element.getX(scaledWidth);
-            this.y = this.element.getY(scaledHeight);
+            this.x = newX;
+            this.y = newY;
+            this.element.setPosition(newX, newY, scaledWidth, scaledHeight);
         }
 
         @Override
