@@ -9,12 +9,12 @@ import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
 public abstract class HUDElement extends GuiComponent implements IGuiOverlay {
-    private Supplier<AnchorX> defaultAnchorX;
-    private Supplier<AnchorY> defaultAnchorY;
-    private IntSupplier defaultX;
-    private IntSupplier defaultY;
-    private IntSupplier defaultWidth;
-    private IntSupplier defaultHeight;
+    private final Supplier<AnchorX> defaultAnchorX;
+    private final Supplier<AnchorY> defaultAnchorY;
+    private final IntSupplier defaultX;
+    private final IntSupplier defaultY;
+    private final IntSupplier defaultWidth;
+    private final IntSupplier defaultHeight;
     private AnchorX anchorX;
     private AnchorY anchorY;
     private int x;
