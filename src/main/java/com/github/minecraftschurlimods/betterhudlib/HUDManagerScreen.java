@@ -1,8 +1,8 @@
 package com.github.minecraftschurlimods.betterhudlib;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -48,11 +48,11 @@ public final class HUDManagerScreen extends Screen {
     private interface HUDWidget extends Renderable {
 
         @Override
-        default void render(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
+        default void render(GuiGraphics graphics, int pMouseX, int pMouseY, float pPartialTick) {
             Minecraft minecraft = Minecraft.getInstance();
             getHUDElement().render(
                     ((ForgeGui) minecraft.gui),
-                    pPoseStack,
+                    graphics,
                     pPartialTick,
                     minecraft.getWindow().getGuiScaledWidth(),
                     minecraft.getWindow().getGuiScaledHeight()
@@ -81,8 +81,8 @@ public final class HUDManagerScreen extends Screen {
         }
 
         @Override
-        public void renderWidget(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
-            HUDWidget.super.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
+        public void renderWidget(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
+            HUDWidget.super.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
         }
 
         @Override

@@ -1,14 +1,13 @@
 package com.github.minecraftschurlimods.betterhudlib;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.client.gui.overlay.IGuiOverlay;
 
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
-public abstract class HUDElement extends GuiComponent implements IGuiOverlay {
+public abstract class HUDElement implements IGuiOverlay {
     private final Supplier<AnchorX> defaultAnchorX;
     private final Supplier<AnchorY> defaultAnchorY;
     private final IntSupplier defaultX;
@@ -37,12 +36,12 @@ public abstract class HUDElement extends GuiComponent implements IGuiOverlay {
     }
 
     @Override
-    public void render(ForgeGui gui, PoseStack poseStack, float partialTick, int screenWidth, int screenHeight) {
+    public void render(ForgeGui gui, GuiGraphics graphics, float partialTick, int screenWidth, int screenHeight) {
         applyDefaults();
-        poseStack.pushPose();
-        poseStack.translate(getNormalizedX(screenWidth), getNormalizedY(screenHeight), 0);
-        draw(gui, poseStack, partialTick);
-        poseStack.popPose();
+        graphics.pose().pushPose();
+        graphics.pose().translate(getNormalizedX(screenWidth), getNormalizedY(screenHeight), 0);
+        draw(gui, graphics, partialTick);
+        graphics.pose().popPose();
     }
 
     private void applyDefaults() {
@@ -80,7 +79,7 @@ public abstract class HUDElement extends GuiComponent implements IGuiOverlay {
         return y;
     }
 
-    public abstract void draw(ForgeGui gui, PoseStack poseStack, float partialTick);
+    public abstract void draw(ForgeGui gui, GuiGraphics graphics, float partialTick);
 
     protected final int getX(int screenWidth) {
         return switch (anchorX) {

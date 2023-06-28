@@ -2,7 +2,7 @@ package com.github.minecraftschurlimods.betterhudlib.test;
 
 import com.github.minecraftschurlimods.betterhudlib.HUDElement;
 import com.github.minecraftschurlimods.betterhudlib.HUDManager;
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
@@ -24,14 +24,14 @@ public class TestMod {
             FMLJavaModLoadingContext.get().getModEventBus().addListener((RegisterGuiOverlaysEvent evt) -> {
                 evt.registerAboveAll("test_hud", new HUDElement(HUDElement.AnchorX.CENTER, HUDElement.AnchorY.CENTER, 0, 0, 100, 100) {
                     @Override
-                    public void draw(ForgeGui gui, PoseStack poseStack, float partialTick) {
-                        fill(poseStack, 0, 0, getHeight(), getWidth(), 0xFF00FF00);
+                    public void draw(ForgeGui gui, GuiGraphics graphics, float partialTick) {
+                        graphics.fill(0, 0, getHeight(), getWidth(), 0xFF00FF00);
                     }
                 });
                 evt.registerAboveAll("test_hud2", new HUDElement(HUDElement.AnchorX.CENTER, HUDElement.AnchorY.BOTTOM, 100, 0, 100, 100) {
                     @Override
-                    public void draw(ForgeGui gui, PoseStack poseStack, float partialTick) {
-                        fill(poseStack, 0, 0, getHeight(), getWidth(), 0xFFFF0000);
+                    public void draw(ForgeGui gui, GuiGraphics graphics, float partialTick) {
+                        graphics.fill(0, 0, getHeight(), getWidth(), 0xFFFF0000);
                     }
                 });
             });
