@@ -81,7 +81,7 @@ public final class HUDManagerScreen extends Screen {
         }
 
         @Override
-        public void renderButton(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
+        public void renderWidget(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
             HUDWidget.super.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
         }
 
