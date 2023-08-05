@@ -15,6 +15,7 @@ public abstract class HUDElement extends GuiComponent implements IGuiOverlay {
     private final IntSupplier defaultY;
     private final IntSupplier defaultWidth;
     private final IntSupplier defaultHeight;
+    private boolean defaultsApplied = false;
     private AnchorX anchorX;
     private AnchorY anchorY;
     private int x;
@@ -37,34 +38,46 @@ public abstract class HUDElement extends GuiComponent implements IGuiOverlay {
 
     @Override
     public void render(ForgeGui gui, PoseStack poseStack, float partialTick, int screenWidth, int screenHeight) {
-        if (anchorX == null) {
-            anchorX = defaultAnchorX.get();
-            anchorY = defaultAnchorY.get();
-            x = defaultX.getAsInt();
-            y = defaultY.getAsInt();
-            width = defaultWidth.getAsInt();
-            height = defaultHeight.getAsInt();
-        }
+        applyDefaults();
         poseStack.pushPose();
+        poseStack.translate(getNormalizedX(screenWidth), getNormalizedY(screenHeight), 0);
+        draw(gui, poseStack, partialTick);
+        poseStack.popPose();
+    }
+
+    private void applyDefaults() {
+        if (defaultsApplied) return;
+        defaultsApplied = true;
+        anchorX = defaultAnchorX.get();
+        x = defaultX.getAsInt();
+        width = defaultWidth.getAsInt();
+        anchorY = defaultAnchorY.get();
+        y = defaultY.getAsInt();
+        height = defaultHeight.getAsInt();
+    }
+
+    private int getNormalizedX(int screenWidth) {
         int x = this.getX(screenWidth);
-        int y = this.getY(screenHeight);
         int elementWidth = this.getWidth();
-        int elementHeight = this.getHeight();
         if (x < 0) {
             x = 0;
-        }
-        if (y < 0) {
-            y = 0;
         }
         if (x + elementWidth > screenWidth) {
             x = screenWidth - elementWidth;
         }
+        return x;
+    }
+
+    private int getNormalizedY(int screenHeight) {
+        int y = this.getY(screenHeight);
+        int elementHeight = this.getHeight();
+        if (y < 0) {
+            y = 0;
+        }
         if (y + elementHeight > screenHeight) {
             y = screenHeight - elementHeight;
         }
-        poseStack.translate(x, y, 0);
-        draw(gui, poseStack, partialTick);
-        poseStack.popPose();
+        return y;
     }
 
     public abstract void draw(ForgeGui gui, PoseStack poseStack, float partialTick);

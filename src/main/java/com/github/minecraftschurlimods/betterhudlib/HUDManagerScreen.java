@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.Widget;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -45,14 +45,8 @@ public final class HUDManagerScreen extends Screen {
         super.onClose();
     }
 
-    @Override
-    public void mouseMoved(double pMouseX, double pMouseY) {
-        if (getFocused() != null) {
-            getFocused().mouseMoved(pMouseX, pMouseY);
-        }
-    }
+    private interface HUDWidget extends Renderable {
 
-    private interface HUDWidget extends Widget {
         @Override
         default void render(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
             Minecraft minecraft = Minecraft.getInstance();
@@ -87,19 +81,19 @@ public final class HUDManagerScreen extends Screen {
         }
 
         @Override
-        public void render(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
+        public void renderButton(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
             HUDWidget.super.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
         }
 
         @Override
-        public void updateNarration(NarrationElementOutput pNarrationElementOutput) {
+        protected void updateWidgetNarration(NarrationElementOutput pNarrationElementOutput) {
             pNarrationElementOutput.add(NarratedElementType.TITLE, getMessage());
         }
 
         @Override
         public void onClick(double pMouseX, double pMouseY) {
-            this.holdX = pMouseX - this.x;
-            this.holdY = pMouseY - this.y;
+            this.holdX = pMouseX - this.getX();
+            this.holdY = pMouseY - this.getY();
         }
 
         @Override
@@ -109,11 +103,11 @@ public final class HUDManagerScreen extends Screen {
         }
 
         @Override
-        public void mouseMoved(double pMouseX, double pMouseY) {
+        protected void onDrag(double pMouseX, double pMouseY, double pDragX, double pDragY) {
             if (this.holdX != null && this.holdY != null) {
                 int newX = (int) (pMouseX - this.holdX);
                 int newY = (int) (pMouseY - this.holdY);
-                setPosition(newX, newY);
+                setElementPosition(newX, newY);
             }
         }
 
@@ -128,25 +122,26 @@ public final class HUDManagerScreen extends Screen {
                     case GLFW.GLFW_KEY_HOME -> this.element.setAnchorX(HUDElement.AnchorX.CENTER);
                     case GLFW.GLFW_KEY_END -> this.element.setAnchorY(HUDElement.AnchorY.CENTER);
                 }
-                this.x = this.element.getX(Minecraft.getInstance().getWindow().getGuiScaledWidth());
-                this.y = this.element.getY(Minecraft.getInstance().getWindow().getGuiScaledHeight());
+                this.setPosition(
+                        this.element.getX(Minecraft.getInstance().getWindow().getGuiScaledWidth()),
+                        this.element.getY(Minecraft.getInstance().getWindow().getGuiScaledHeight())
+                );
             } else {
                 switch (pKeyCode) {
-                    case GLFW.GLFW_KEY_RIGHT -> this.setPosition(this.x + 1, this.y);
-                    case GLFW.GLFW_KEY_LEFT -> this.setPosition(this.x - 1, this.y);
-                    case GLFW.GLFW_KEY_DOWN -> this.setPosition(this.x, this.y + 1);
-                    case GLFW.GLFW_KEY_UP -> this.setPosition(this.x, this.y - 1);
+                    case GLFW.GLFW_KEY_RIGHT -> this.setElementPosition(this.getX() + 1, this.getY());
+                    case GLFW.GLFW_KEY_LEFT -> this.setElementPosition(this.getX() - 1, this.getY());
+                    case GLFW.GLFW_KEY_DOWN -> this.setElementPosition(this.getX(), this.getY() + 1);
+                    case GLFW.GLFW_KEY_UP -> this.setElementPosition(this.getX(), this.getY() - 1);
                 }
             }
             return true;
         }
 
-        private void setPosition(int newX, int newY) {
+        private void setElementPosition(int newX, int newY) {
             Minecraft minecraft = Minecraft.getInstance();
             int scaledWidth = minecraft.getWindow().getGuiScaledWidth();
             int scaledHeight = minecraft.getWindow().getGuiScaledHeight();
-            this.x = newX;
-            this.y = newY;
+            setPosition(newX, newY);
             this.element.setPosition(newX, newY, scaledWidth, scaledHeight);
         }
 

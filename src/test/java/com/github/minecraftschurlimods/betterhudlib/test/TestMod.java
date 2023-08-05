@@ -28,6 +28,12 @@ public class TestMod {
                         fill(poseStack, 0, 0, getHeight(), getWidth(), 0xFF00FF00);
                     }
                 });
+                evt.registerAboveAll("test_hud2", new HUDElement(HUDElement.AnchorX.CENTER, HUDElement.AnchorY.BOTTOM, 100, 0, 100, 100) {
+                    @Override
+                    public void draw(ForgeGui gui, PoseStack poseStack, float partialTick) {
+                        fill(poseStack, 0, 0, getHeight(), getWidth(), 0xFFFF0000);
+                    }
+                });
             });
         }
     }
