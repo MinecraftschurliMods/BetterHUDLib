@@ -11,10 +11,11 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.client.gui.overlay.ForgeGui;
-import net.minecraftforge.client.gui.overlay.GuiOverlayManager;
-import net.minecraftforge.client.gui.overlay.IGuiOverlay;
-import net.minecraftforge.client.gui.overlay.NamedGuiOverlay;
+import net.neoforged.neoforge.client.gui.overlay.ExtendedGui;
+import net.neoforged.neoforge.client.gui.overlay.GuiOverlayManager;
+import net.neoforged.neoforge.client.gui.overlay.IGuiOverlay;
+import net.neoforged.neoforge.client.gui.overlay.NamedGuiOverlay;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 public final class HUDManagerScreen extends Screen {
@@ -51,7 +52,7 @@ public final class HUDManagerScreen extends Screen {
         default void render(GuiGraphics graphics, int pMouseX, int pMouseY, float pPartialTick) {
             Minecraft minecraft = Minecraft.getInstance();
             getHUDElement().render(
-                    ((ForgeGui) minecraft.gui),
+                    ((ExtendedGui) minecraft.gui),
                     graphics,
                     pPartialTick,
                     minecraft.getWindow().getGuiScaledWidth(),
@@ -72,8 +73,8 @@ public final class HUDManagerScreen extends Screen {
     private static class HUDElementWrapper extends AbstractWidget implements HUDWidget {
 
         private final HUDElement element;
-        private Double holdX;
-        private Double holdY;
+        private @Nullable Double holdX;
+        private @Nullable Double holdY;
 
         public HUDElementWrapper(Component name, HUDElement element) {
             super(element.getX(Minecraft.getInstance().getWindow().getGuiScaledWidth()), element.getY(Minecraft.getInstance().getWindow().getGuiScaledHeight()), element.getWidth(), element.getHeight(), name);

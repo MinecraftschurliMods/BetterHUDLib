@@ -1,8 +1,8 @@
 package com.github.minecraftschurlimods.betterhudlib;
 
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraftforge.client.gui.overlay.ForgeGui;
-import net.minecraftforge.client.gui.overlay.IGuiOverlay;
+import net.neoforged.neoforge.client.gui.overlay.ExtendedGui;
+import net.neoforged.neoforge.client.gui.overlay.IGuiOverlay;
 
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
@@ -15,8 +15,8 @@ public abstract class HUDElement implements IGuiOverlay {
     private final IntSupplier defaultWidth;
     private final IntSupplier defaultHeight;
     private boolean defaultsApplied = false;
-    private AnchorX anchorX;
-    private AnchorY anchorY;
+    private AnchorX anchorX = AnchorX.LEFT;
+    private AnchorY anchorY = AnchorY.TOP;
     private int x;
     private int y;
     private int width;
@@ -36,7 +36,7 @@ public abstract class HUDElement implements IGuiOverlay {
     }
 
     @Override
-    public void render(ForgeGui gui, GuiGraphics graphics, float partialTick, int screenWidth, int screenHeight) {
+    public void render(ExtendedGui gui, GuiGraphics graphics, float partialTick, int screenWidth, int screenHeight) {
         applyDefaults();
         graphics.pose().pushPose();
         graphics.pose().translate(getNormalizedX(screenWidth), getNormalizedY(screenHeight), 0);
@@ -79,7 +79,7 @@ public abstract class HUDElement implements IGuiOverlay {
         return y;
     }
 
-    public abstract void draw(ForgeGui gui, GuiGraphics graphics, float partialTick);
+    public abstract void draw(ExtendedGui gui, GuiGraphics graphics, float partialTick);
 
     protected final int getX(int screenWidth) {
         return switch (anchorX) {
