@@ -1,13 +1,14 @@
 package com.github.minecraftschurlimods.betterhudlib;
 
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.neoforged.neoforge.client.gui.overlay.ExtendedGui;
-import net.neoforged.neoforge.client.gui.overlay.IGuiOverlay;
+import net.minecraft.client.gui.LayeredDraw;
 
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
-public abstract class HUDElement implements IGuiOverlay {
+public abstract class HUDElement implements LayeredDraw.Layer {
     private final Supplier<AnchorX> defaultAnchorX;
     private final Supplier<AnchorY> defaultAnchorY;
     private final IntSupplier defaultX;
@@ -36,11 +37,13 @@ public abstract class HUDElement implements IGuiOverlay {
     }
 
     @Override
-    public void render(ExtendedGui gui, GuiGraphics graphics, float partialTick, int screenWidth, int screenHeight) {
-        applyDefaults();
+    public void render(GuiGraphics graphics, DeltaTracker deltaTracker) {
+        int screenWidth = Minecraft.getInstance().getWindow().getGuiScaledWidth();
+        int screenHeight = Minecraft.getInstance().getWindow().getGuiScaledHeight();
         graphics.pose().pushPose();
         graphics.pose().translate(getNormalizedX(screenWidth), getNormalizedY(screenHeight), 0);
-        draw(gui, graphics, partialTick);
+        applyDefaults();
+        draw(graphics, deltaTracker);
         graphics.pose().popPose();
     }
 
@@ -79,7 +82,7 @@ public abstract class HUDElement implements IGuiOverlay {
         return y;
     }
 
-    public abstract void draw(ExtendedGui gui, GuiGraphics graphics, float partialTick);
+    public abstract void draw(GuiGraphics graphics, DeltaTracker deltaTracker);
 
     protected final int getX(int screenWidth) {
         return switch (anchorX) {

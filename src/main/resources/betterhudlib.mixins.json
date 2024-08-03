@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8.5",
+  "package": "com.github.minecraftschurlimods.betterhudlib.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "GuiAccessor",
+    "GuiLayerManagerAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

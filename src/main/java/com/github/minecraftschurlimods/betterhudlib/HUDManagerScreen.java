@@ -1,8 +1,13 @@
 package com.github.minecraftschurlimods.betterhudlib;
 
+import com.github.minecraftschurlimods.betterhudlib.mixin.GuiAccessor;
+import com.github.minecraftschurlimods.betterhudlib.mixin.GuiLayerManagerAccessor;
 import net.minecraft.Util;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.LayeredDraw;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -11,13 +16,13 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
-import net.neoforged.neoforge.client.gui.overlay.ExtendedGui;
-import net.neoforged.neoforge.client.gui.overlay.GuiOverlayManager;
-import net.neoforged.neoforge.client.gui.overlay.IGuiOverlay;
-import net.neoforged.neoforge.client.gui.overlay.NamedGuiOverlay;
+import net.neoforged.neoforge.client.gui.GuiLayerManager;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
+import java.util.List;
+
+@SuppressWarnings("UnstableApiUsage")
 public final class HUDManagerScreen extends Screen {
 
     HUDManagerScreen() {
@@ -27,13 +32,18 @@ public final class HUDManagerScreen extends Screen {
     @Override
     protected void init() {
         super.init();
-        for (NamedGuiOverlay entry : GuiOverlayManager.getOverlays()) {
-            if (entry.overlay() instanceof HUDElement element) {
-                addRenderableWidget(new HUDElementWrapper(Component.translatable(Util.makeDescriptionId("hud_element", entry.id())), element));
+        if (minecraft == null) return;
+        for (GuiLayerManager.NamedLayer entry : getGuiLayers(minecraft.gui)) {
+            if (entry.layer() instanceof HUDElement element) {
+                addRenderableWidget(new HUDElementWrapper(Component.translatable(Util.makeDescriptionId("hud_element", entry.name())), element));
             } else {
                 addRenderableOnly(new StandardHUDElement(entry));
             }
         }
+    }
+
+    private List<GuiLayerManager.NamedLayer> getGuiLayers(Gui gui) {
+        return ((GuiLayerManagerAccessor) ((GuiAccessor) gui).getLayerManager()).getLayers();
     }
 
     @Override
@@ -50,23 +60,31 @@ public final class HUDManagerScreen extends Screen {
 
         @Override
         default void render(GuiGraphics graphics, int pMouseX, int pMouseY, float pPartialTick) {
-            Minecraft minecraft = Minecraft.getInstance();
-            getHUDElement().render(
-                    ((ExtendedGui) minecraft.gui),
-                    graphics,
-                    pPartialTick,
-                    minecraft.getWindow().getGuiScaledWidth(),
-                    minecraft.getWindow().getGuiScaledHeight()
-            );
+            getHUDElement().render(graphics, new DeltaTracker() {
+                @Override
+                public float getGameTimeDeltaTicks() {
+                    return pPartialTick;
+                }
+
+                @Override
+                public float getGameTimeDeltaPartialTick(boolean b) {
+                    return pPartialTick;
+                }
+
+                @Override
+                public float getRealtimeDeltaTicks() {
+                    return pPartialTick;
+                }
+            });
         }
 
-        IGuiOverlay getHUDElement();
+        LayeredDraw.Layer getHUDElement();
     }
 
-    private record StandardHUDElement(NamedGuiOverlay entry) implements HUDWidget {
+    private record StandardHUDElement(GuiLayerManager.NamedLayer entry) implements HUDWidget {
         @Override
-        public IGuiOverlay getHUDElement() {
-            return entry.overlay();
+        public LayeredDraw.Layer getHUDElement() {
+            return entry.layer();
         }
     }
 
@@ -92,7 +110,8 @@ public final class HUDManagerScreen extends Screen {
         }
 
         @Override
-        public void onClick(double pMouseX, double pMouseY) {
+        public void onClick(double pMouseX, double pMouseY, int pButton) {
+            if (pButton != GLFW.GLFW_MOUSE_BUTTON_LEFT) return;
             this.holdX = pMouseX - this.getX();
             this.holdY = pMouseY - this.getY();
         }
@@ -150,7 +169,7 @@ public final class HUDManagerScreen extends Screen {
         public void playDownSound(SoundManager pHandler) {}
 
         @Override
-        public IGuiOverlay getHUDElement() {
+        public LayeredDraw.Layer getHUDElement() {
             return element;
         }
     }
